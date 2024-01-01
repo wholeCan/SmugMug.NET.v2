@@ -72,7 +72,7 @@ namespace SmugMug.NET
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum SmugSearchable
-    
+
     {
         No,
         Local,

@@ -4,6 +4,7 @@ using DotNetOpenAuth.OAuth.ChannelElements;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -86,7 +87,7 @@ namespace SmugMug.NET
             }
         }
 
-        private async Task<Tuple<T, Dictionary<string,TE>>> GetRequestWithExpansions<T, TE>(string endpoint)
+        private async Task<Tuple<T, Dictionary<string, TE>>> GetRequestWithExpansions<T, TE>(string endpoint)
         {
             return await GetRequestWithExpansions<T, TE>(SMUGMUG_API_v2_BaseEndpoint, endpoint);
         }
@@ -117,7 +118,7 @@ namespace SmugMug.NET
                 HttpResponseMessage httpResponse = client.GetAsync(endpoint).Result;
                 System.Diagnostics.Trace.WriteLine(string.Format("GET {0}", httpResponse.RequestMessage.RequestUri));
                 httpResponse.EnsureSuccessStatusCode();
-                GetResponseWithExpansionStub<T,TE> contentResponse = await httpResponse.Content.ReadAsAsync<GetResponseWithExpansionStub<T,TE>>();
+                GetResponseWithExpansionStub<T, TE> contentResponse = await httpResponse.Content.ReadAsAsync<GetResponseWithExpansionStub<T, TE>>();
                 System.Diagnostics.Trace.WriteLine(string.Format("---{0}:{1}", contentResponse.Code, contentResponse.Message));
 
                 return new Tuple<T, Dictionary<string, TE>>(contentResponse.Response, contentResponse.Expansions);
@@ -155,7 +156,7 @@ namespace SmugMug.NET
 
                 HttpResponseMessage httpResponse = client.PostAsync(endpoint, new StringContent(jsonContent)).Result;
                 System.Diagnostics.Trace.WriteLine(string.Format("POST {0}: {1}", httpResponse.RequestMessage.RequestUri, jsonContent));
-                
+
                 PostResponseStub<T> contentResponse = null;
                 if (httpResponse.IsSuccessStatusCode)
                 {
@@ -734,30 +735,43 @@ namespace SmugMug.NET
 
         private async Task<AlbumImagesWithSizes> GetPagedAlbumImagesWithSizes(string initialUri, int maxCount)
         {
-            var result = new AlbumImagesWithSizes();
-            result.AlbumImages = new List<AlbumImage>();
-            result.ImageSizes = new Dictionary<string, ImageSizesGetResponse>();
+            var result = new AlbumImagesWithSizes
+            {
+                AlbumImages = new List<AlbumImage>(),
+                ImageSizes = new Dictionary<string, ImageSizesGetResponse>()
+            };
             string nextPage = initialUri;
-            nextPage = string.Format("{0}{2}{1}", nextPage, "_expand=ImageSizes", nextPage.Contains('?') ? "&" : "?");
+            var breaker = nextPage.Contains('?') ? "&" : "?";
+            nextPage = string.Format("{0}{1}_expand=ImageSizes", nextPage, breaker);
             //AlbumImagePagesResponse albumImagePagesResponse;
             //ImageSizesGetResponse albumImageSizesResponse;
-            Tuple<AlbumImagePagesResponse, Dictionary<string, ImageSizesGetResponse>> response;
+            Tuple<AlbumImagePagesResponse, Dictionary<string, ImageSizesGetResponse>> response = null;
             do
             {
                 response = await GetRequestWithExpansions<AlbumImagePagesResponse, ImageSizesGetResponse>(nextPage);
-                result.AlbumImages.AddRange(response.Item1.AlbumImage);
-                result.ImageSizes = result.ImageSizes.Concat(response.Item2).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
-                if (response.Item1.Pages != null)
+
+                if (response.Item1.AlbumImage != null)
                 {
-                    nextPage = response.Item1.Pages.NextPage;
-                    if (!String.IsNullOrEmpty(nextPage))
+//                    Debug.WriteLine("Success: " + nextPage);
+                    result.AlbumImages.AddRange(response.Item1.AlbumImage);
+                    result.ImageSizes = result.ImageSizes.Concat(response.Item2).GroupBy(d => d.Key).ToDictionary(d => d.Key, d => d.First().Value);
+                    if (response.Item1.Pages != null)
                     {
-                        nextPage = string.Format("{0}{2}{1}", nextPage, "_expand=ImageSizes", nextPage.Contains('?') ? "&" : "?"); 
+                        nextPage = response.Item1.Pages.NextPage;
+                        if (!String.IsNullOrEmpty(nextPage))
+                        {
+                            nextPage = string.Format("{0}{2}{1}", nextPage, "_expand=ImageSizes", nextPage.Contains('?') ? "&" : "?");
+                        }
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
                 else
                 {
-                    break;
+                    System.Diagnostics.Debug.WriteLine("null album detected!  endpoint: " + nextPage);
+                    break;//break because this is the end of the album, without it - the thread seems to run forever banging on the album endpoint.
                 }
                 //TODO: Update nextPage to Ensure we don't return more than maxCount
             }
@@ -994,4 +1008,3 @@ namespace SmugMug.NET
         #endregion        
     }
 }
- 

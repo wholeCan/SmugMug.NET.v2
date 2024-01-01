@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using DotNetOpenAuth.OAuth.ChannelElements;
+﻿using DotNetOpenAuth.OAuth.ChannelElements;
 using DotNetOpenAuth.OAuth.Messages;
+using System;
+using System.Collections.Generic;
 
 
 namespace SmugMug.NET
@@ -28,7 +24,8 @@ namespace SmugMug.NET
             {
                 return this.ConsumerSecret;
             }
-            else {
+            else
+            {
                 throw new ArgumentException("Unrecognized consumer key.", "consumerKey");
             }
         }
