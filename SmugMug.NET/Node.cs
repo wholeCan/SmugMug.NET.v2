@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace SmugMug.NET
@@ -74,7 +74,7 @@ namespace SmugMug.NET
         public Node Node;
     }
 
-    public class NodePostResponse :  SmugMugUri
+    public class NodePostResponse : SmugMugUri
     {
         public Node Node;
 

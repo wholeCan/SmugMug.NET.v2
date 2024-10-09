@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmugMug.NET
@@ -23,7 +21,7 @@ namespace SmugMug.NET
         Task<User> GetUser(string userNickName);
         Task<User> GetAuthenticatedUser();
         Task<User> GetSiteUser();
-        
+
         Task<UserProfile> GetUserProfile(string userNickName);
         Task<UserProfile> GetUserProfile(User user);
 
@@ -64,6 +62,6 @@ namespace SmugMug.NET
 
         Task<Folder> UpdateFolder(Folder folder, Dictionary<string, string> arguments);
 
-        Task DeleteFolder(Folder folder);   
+        Task DeleteFolder(Folder folder);
     }
 }

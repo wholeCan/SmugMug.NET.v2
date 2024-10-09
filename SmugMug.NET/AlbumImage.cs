@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SmugMug.NET
 {
     public class AlbumImage : Image
     {
     }
-    
+
 
     public class AlbumImageResponse : SmugMugUri
     {

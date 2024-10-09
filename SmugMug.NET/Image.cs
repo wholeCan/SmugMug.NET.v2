@@ -76,7 +76,7 @@ namespace SmugMug.NET
         public string URL;
     }
 
-    public class ImagePostResponse 
+    public class ImagePostResponse
     {
         public string Stat;
         public string Method;
