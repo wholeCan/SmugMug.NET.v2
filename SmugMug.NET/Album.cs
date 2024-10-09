@@ -58,7 +58,7 @@ namespace SmugMug.NET
         public bool Watermark;
         public string WatermarkUri;
         public Uri WebUri;
-        public bool WorldSearchable;
+        public string WorldSearchable;  //2024, this used to be a bool - but smugmug changed something.
         public AlbumUris Uris;
 
         public override string ToString()
